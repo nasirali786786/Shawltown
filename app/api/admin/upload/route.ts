@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAdminSession } from '@/lib/auth';
+import { isCloudinaryConfigured, uploadToCloudinary } from '@/lib/cloudinary';
 import fs from 'fs';
 import path from 'path';
 
@@ -26,7 +27,21 @@ export async function POST(req: NextRequest) {
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    // Save into public/images/products directory
+    // If Cloudinary credentials are set in environment, upload to Cloudinary
+    if (isCloudinaryConfigured()) {
+      try {
+        const cloudResult = await uploadToCloudinary(buffer, 'shawlghar_products');
+        return NextResponse.json({
+          success: true,
+          url: cloudResult.url,
+          provider: 'cloudinary',
+        });
+      } catch (cloudErr: any) {
+        console.error('Cloudinary upload error, falling back to local:', cloudErr);
+      }
+    }
+
+    // Fallback: Save into public/images/products directory
     const uploadDir = path.join(process.cwd(), 'public', 'images', 'products');
     if (!fs.existsSync(uploadDir)) {
       fs.mkdirSync(uploadDir, { recursive: true });
@@ -45,6 +60,7 @@ export async function POST(req: NextRequest) {
       success: true,
       url: publicUrl,
       fileName,
+      provider: 'local',
     });
   } catch (error: any) {
     console.error('Image upload failed:', error);
