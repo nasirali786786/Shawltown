@@ -16,7 +16,9 @@ import {
   Sparkles,
   Package,
   Pencil,
-  Tag
+  Tag,
+  Upload,
+  Image as ImageIcon
 } from 'lucide-react';
 
 interface ProductManagementTableProps {
@@ -44,6 +46,7 @@ export default function ProductManagementTable({
   const [editCategoryId, setEditCategoryId] = useState('');
   const [editStockStatus, setEditStockStatus] = useState('in_stock');
   const [editIsFeatured, setEditIsFeatured] = useState(false);
+  const [editImageUrl, setEditImageUrl] = useState('');
   const [editLoading, setEditLoading] = useState(false);
   const [editError, setEditError] = useState<string | null>(null);
 
@@ -61,8 +64,39 @@ export default function ProductManagementTable({
   const [stockStatus, setStockStatus] = useState('in_stock');
 
   const [loading, setLoading] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, isEdit = false) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setUploadingImage(true);
+      setUploadError(null);
+      const fd = new FormData();
+      fd.append('file', file);
+      const res = await fetch('/api/admin/upload', {
+        method: 'POST',
+        body: fd,
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to upload image file');
+      }
+      if (isEdit) {
+        setEditImageUrl(data.url);
+      } else {
+        setImageUrl(data.url);
+      }
+    } catch (err: any) {
+      setUploadError(err.message || 'Image upload error');
+    } finally {
+      setUploadingImage(false);
+    }
+  };
 
   const handleNameChange = (val: string) => {
     setName(val);
@@ -157,6 +191,7 @@ export default function ProductManagementTable({
     setEditCategoryId(p.category_id.toString());
     setEditStockStatus(p.stock_status || 'in_stock');
     setEditIsFeatured(p.is_featured === 1);
+    setEditImageUrl(p.image_url);
     setEditError(null);
   };
 
@@ -176,6 +211,7 @@ export default function ProductManagementTable({
           category_id: parseInt(editCategoryId),
           stock_status: editStockStatus,
           is_featured: editIsFeatured ? 1 : 0,
+          image_url: editImageUrl,
         }),
       });
 
@@ -195,6 +231,7 @@ export default function ProductManagementTable({
                 category_name: categories.find((c) => c.id === parseInt(editCategoryId))?.name || item.category_name,
                 stock_status: editStockStatus as 'in_stock' | 'low_stock' | 'out_of_stock',
                 is_featured: editIsFeatured ? 1 : 0,
+                image_url: editImageUrl,
               }
             : item
         )
@@ -539,18 +576,56 @@ export default function ProductManagementTable({
                 </div>
               </div>
 
-              <div className="space-y-1">
-                <label className="block text-xs font-semibold uppercase tracking-wider text-stone-700">
-                  High-Resolution Image URL *
-                </label>
-                <input
-                  type="url"
-                  required
-                  value={imageUrl}
-                  onChange={(e) => setImageUrl(e.target.value)}
-                  placeholder="https://images.unsplash.com/..."
-                  className="w-full px-3 py-2 text-xs bg-stone-50 border border-stone-300 rounded-lg text-stone-900 focus:bg-white focus:outline-none"
-                />
+              <div className="space-y-2 p-3.5 bg-stone-50 border border-stone-200 rounded-xl">
+                <div className="flex items-center justify-between">
+                  <label className="block text-xs font-bold uppercase tracking-wider text-stone-700">
+                    Product Image (File Upload or Image URL) *
+                  </label>
+                  {uploadingImage && (
+                    <span className="text-[11px] text-amber-700 font-semibold animate-pulse">Uploading file...</span>
+                  )}
+                </div>
+
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    required
+                    value={imageUrl}
+                    onChange={(e) => setImageUrl(e.target.value)}
+                    placeholder="Enter image URL or upload directly..."
+                    className="flex-1 px-3 py-2 text-xs bg-white border border-stone-300 rounded-lg text-stone-900 focus:outline-none focus:border-amber-800"
+                  />
+                  <label className="px-3.5 py-2 bg-stone-900 hover:bg-amber-900 text-white text-xs font-semibold rounded-lg cursor-pointer transition shrink-0 flex items-center gap-1.5 shadow-2xs">
+                    <Upload className="w-3.5 h-3.5" />
+                    <span>Upload from Device</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handleFileUpload(e, false)}
+                      className="hidden"
+                    />
+                  </label>
+                </div>
+
+                {uploadError && (
+                  <div className="text-[11px] text-rose-700 font-medium">{uploadError}</div>
+                )}
+
+                {/* Live Preview */}
+                {imageUrl && (
+                  <div className="flex items-center gap-3 pt-1 border-t border-stone-200/80">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={imageUrl}
+                      alt="Preview"
+                      className="w-14 h-16 object-cover rounded-lg border border-stone-300 shadow-2xs shrink-0"
+                    />
+                    <div className="text-[11px] text-stone-600 leading-tight">
+                      <span className="font-semibold text-emerald-800 block">✓ Live Image Preview Active</span>
+                      You don&apos;t need to use Unsplash! You can upload any photo directly from your PC or mobile phone.
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -717,6 +792,53 @@ export default function ProductManagementTable({
                     </option>
                   ))}
                 </select>
+              </div>
+
+              <div className="space-y-2 p-3.5 bg-stone-50 border border-stone-200 rounded-xl">
+                <div className="flex items-center justify-between">
+                  <label className="block text-xs font-bold uppercase tracking-wider text-stone-700">
+                    Product Image (File Upload or Image URL)
+                  </label>
+                  {uploadingImage && (
+                    <span className="text-[11px] text-amber-700 font-semibold animate-pulse">Uploading file...</span>
+                  )}
+                </div>
+
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={editImageUrl}
+                    onChange={(e) => setEditImageUrl(e.target.value)}
+                    placeholder="Enter image URL or upload directly..."
+                    className="flex-1 px-3 py-2 text-xs bg-white border border-stone-300 rounded-lg text-stone-900 focus:outline-none focus:border-amber-800"
+                  />
+                  <label className="px-3.5 py-2 bg-stone-900 hover:bg-amber-900 text-white text-xs font-semibold rounded-lg cursor-pointer transition shrink-0 flex items-center gap-1.5 shadow-2xs">
+                    <Upload className="w-3.5 h-3.5" />
+                    <span>Upload Image</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handleFileUpload(e, true)}
+                      className="hidden"
+                    />
+                  </label>
+                </div>
+
+                {/* Edit Live Preview */}
+                {editImageUrl && (
+                  <div className="flex items-center gap-3 pt-1 border-t border-stone-200/80">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={editImageUrl}
+                      alt="Preview"
+                      className="w-14 h-16 object-cover rounded-lg border border-stone-300 shadow-2xs shrink-0"
+                    />
+                    <div className="text-[11px] text-stone-600 leading-tight">
+                      <span className="font-semibold text-emerald-800 block">✓ Product Image Preview</span>
+                      Upload from PC or paste any web link.
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
