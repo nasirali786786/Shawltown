@@ -4,6 +4,8 @@ import PromoBanner from '@/components/PromoBanner';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import FloatingWhatsApp from '@/components/FloatingWhatsApp';
+import CartDrawer from '@/components/CartDrawer';
+import { CartProvider } from '@/context/CartContext';
 import { getSettings } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
@@ -11,7 +13,7 @@ export const dynamic = 'force-dynamic';
 export async function generateMetadata(): Promise<Metadata> {
   const settings = getSettings();
   const title = `${settings.site_name || 'Shawl Ghar'} | Authentic Handcrafted Kashmiri Shawls & Fine Stoles`;
-  const description = settings.site_tagline || 'Authentic Handcrafted Kashmiri Shawls, Pure Wool Stoles & Fine Textiles. Order on WhatsApp with Cash on Delivery across Pakistan.';
+  const description = settings.site_tagline || 'Authentic Handcrafted Kashmiri Shawls, Pure Wool Stoles & Fine Textiles. Order with Cash on Delivery across Pakistan.';
 
   return {
     title,
@@ -37,18 +39,21 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-screen flex flex-col bg-[#FAF8F5] text-stone-900 antialiased selection:bg-amber-200 selection:text-amber-900">
-        <PromoBanner />
-        <Navbar
-          siteName={settings.site_name}
-          siteTagline={settings.site_tagline}
-          whatsappNumber={settings.whatsapp_number}
-        />
-        <main className="flex-1">{children}</main>
-        <Footer />
-        <FloatingWhatsApp
-          whatsappNumber={settings.whatsapp_number}
-          siteName={settings.site_name}
-        />
+        <CartProvider>
+          <PromoBanner />
+          <Navbar
+            siteName={settings.site_name}
+            siteTagline={settings.site_tagline}
+            whatsappNumber={settings.whatsapp_number}
+          />
+          <main className="flex-1">{children}</main>
+          <Footer />
+          <FloatingWhatsApp
+            whatsappNumber={settings.whatsapp_number}
+            siteName={settings.site_name}
+          />
+          <CartDrawer />
+        </CartProvider>
       </body>
     </html>
   );

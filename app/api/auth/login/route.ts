@@ -29,8 +29,8 @@ export async function POST(request: Request) {
       );
     }
 
-    // Phase 1 Prototype check for admin role
-    if (user.role !== 'admin') {
+    // Admin & Staff privileges check
+    if (user.role !== 'admin' && user.role !== 'super_admin' && user.role_id !== 1) {
       return NextResponse.json(
         { error: 'Access denied: Administrative privileges required' },
         { status: 403 }

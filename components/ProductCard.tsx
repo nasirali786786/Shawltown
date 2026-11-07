@@ -1,7 +1,10 @@
-import React from 'react';
+'use client';
+
+import React, { useState } from 'react';
 import Link from 'next/link';
-import { Sparkles, Eye, MessageCircle, ArrowUpRight } from 'lucide-react';
+import { Sparkles, Eye, MessageCircle, ArrowUpRight, ShoppingBag, Check } from 'lucide-react';
 import { Product, formatPrice, buildWhatsAppLink } from '@/lib/format';
+import { useCart } from '@/context/CartContext';
 
 interface ProductCardProps {
   product: Product;
@@ -14,6 +17,10 @@ export default function ProductCard({
   whatsappNumber = '0313-5209085',
   currencySymbol = 'Rs.',
 }: ProductCardProps) {
+  const { addToCart } = useCart();
+  const [adding, setAdding] = useState(false);
+  const [added, setAdded] = useState(false);
+
   const discount = product.compare_at_price
     ? Math.round(((product.compare_at_price - product.price) / product.compare_at_price) * 100)
     : null;
@@ -26,6 +33,21 @@ export default function ProductCard({
   // WhatsApp pre-filled message in clean English
   const whatsappMsg = `Hello! I would like to order this handcrafted shawl from Shawl Ghar:\n\n*${product.name}*\nPrice: ${formattedPrice}\nLink: http://localhost:3000/products/${product.id}\n\nPlease share Cash on Delivery order confirmation details. Thank you!`;
   const whatsappUrl = buildWhatsAppLink(whatsappNumber, whatsappMsg);
+
+  const handleAddToCart = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    try {
+      setAdding(true);
+      await addToCart(product.id, 1);
+      setAdded(true);
+      setTimeout(() => setAdded(false), 2000);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setAdding(false);
+    }
+  };
 
   return (
     <div className="group relative bg-white border border-stone-200/90 rounded-2xl overflow-hidden shadow-2xs hover:shadow-xl transition-all duration-300 flex flex-col justify-between">
@@ -102,7 +124,7 @@ export default function ProductCard({
         </div>
 
         {/* Pricing & Direct WhatsApp Order Action */}
-        <div className="mt-4 pt-3 border-t border-stone-100 space-y-3">
+        <div className="mt-4 pt-3 border-t border-stone-100 space-y-2.5">
           <div className="flex items-baseline justify-between">
             <div className="flex items-baseline gap-2">
               <span className="text-lg font-bold text-stone-950 font-serif">
@@ -123,15 +145,39 @@ export default function ProductCard({
             </Link>
           </div>
 
-          {/* Direct WhatsApp Order Button on Card */}
+          {/* Primary Action: Add to Bag */}
+          <button
+            type="button"
+            onClick={handleAddToCart}
+            disabled={adding}
+            className={`w-full py-2.5 px-3 rounded-xl text-xs font-bold tracking-wide transition shadow-xs flex items-center justify-center gap-2 cursor-pointer ${
+              added
+                ? 'bg-emerald-700 text-white'
+                : 'bg-stone-900 hover:bg-amber-900 text-white'
+            }`}
+          >
+            {added ? (
+              <>
+                <Check className="w-3.5 h-3.5" />
+                <span>Added to Bag!</span>
+              </>
+            ) : (
+              <>
+                <ShoppingBag className="w-3.5 h-3.5" />
+                <span>{adding ? 'Adding...' : 'Add to Bag'}</span>
+              </>
+            )}
+          </button>
+
+          {/* Secondary Action: Direct WhatsApp Concierge */}
           <a
             href={whatsappUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="w-full py-2.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold tracking-wide transition shadow-xs flex items-center justify-center gap-2 group/btn cursor-pointer"
+            className="w-full py-2 px-3 rounded-xl border border-emerald-600/40 text-emerald-800 hover:bg-emerald-50 text-[11px] font-semibold tracking-wide transition flex items-center justify-center gap-1.5 group/btn cursor-pointer"
           >
-            <MessageCircle className="w-3.5 h-3.5 text-white group-hover/btn:scale-110 transition-transform" />
-            <span>Order on WhatsApp</span>
+            <MessageCircle className="w-3 h-3 text-emerald-600 group-hover/btn:scale-110 transition-transform" />
+            <span>Order via WhatsApp</span>
           </a>
         </div>
       </div>

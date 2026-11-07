@@ -5,8 +5,12 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import {
   LayoutDashboard,
+  ShoppingBag,
   Package,
+  Boxes,
   Layers,
+  Tag,
+  UserCheck,
   Users,
   Settings,
   LogOut,
@@ -38,10 +42,14 @@ export default function AdminSidebar({ user }: AdminSidebarProps) {
 
   const navItems = [
     { name: 'Dashboard Overview', href: '/admin', icon: LayoutDashboard },
+    { name: 'Orders & Tracking', href: '/admin/orders', icon: ShoppingBag },
     { name: 'Product Catalog', href: '/admin/products', icon: Package },
+    { name: 'Inventory & Stock', href: '/admin/inventory', icon: Boxes },
     { name: 'Categories', href: '/admin/categories', icon: Layers },
+    { name: 'Coupons & Discounts', href: '/admin/coupons', icon: Tag },
+    { name: 'Customers CRM', href: '/admin/customers', icon: UserCheck },
     { name: 'Users & Roles', href: '/admin/users', icon: Users },
-    { name: 'Website & WhatsApp Settings', href: '/admin/settings', icon: Settings },
+    { name: 'Website & Settings', href: '/admin/settings', icon: Settings },
   ];
 
   return (
@@ -64,9 +72,9 @@ export default function AdminSidebar({ user }: AdminSidebarProps) {
       </div>
 
       {/* Navigation Links */}
-      <div className="p-4 flex-1 space-y-1.5">
+      <div className="p-4 flex-1 space-y-1 overflow-y-auto">
         <div className="px-3 py-2 text-[10px] font-bold uppercase tracking-widest text-stone-500">
-          Management
+          Management Suite
         </div>
 
         {navItems.map((item) => {
@@ -76,7 +84,7 @@ export default function AdminSidebar({ user }: AdminSidebarProps) {
             <Link
               key={item.name}
               href={item.href}
-              className={`flex items-center gap-3 px-3.5 py-2.5 rounded-lg text-xs font-medium tracking-wide transition-all ${
+              className={`flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-medium tracking-wide transition-all ${
                 isActive
                   ? 'bg-amber-600 text-white font-semibold shadow-sm'
                   : 'text-stone-400 hover:text-white hover:bg-stone-800'
@@ -88,18 +96,18 @@ export default function AdminSidebar({ user }: AdminSidebarProps) {
           );
         })}
 
-        <div className="pt-6 px-3 py-2 text-[10px] font-bold uppercase tracking-widest text-stone-500">
-          Quick Links
+        <div className="pt-4 px-3 py-2 text-[10px] font-bold uppercase tracking-widest text-stone-500">
+          Public Storefront
         </div>
 
         <Link
           href="/"
           target="_blank"
-          className="flex items-center justify-between px-3.5 py-2.5 rounded-lg text-xs font-medium text-stone-400 hover:text-white hover:bg-stone-800 transition"
+          className="flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium text-stone-400 hover:text-white hover:bg-stone-800 transition"
         >
           <span className="flex items-center gap-3">
             <ExternalLink className="w-4 h-4" />
-            <span>View Live Storefront</span>
+            <span>View Live Site</span>
           </span>
           <span className="text-[10px] bg-stone-800 px-1.5 py-0.5 rounded text-stone-400">new tab</span>
         </Link>

@@ -76,7 +76,7 @@ export async function getSessionUser(): Promise<User | null> {
  */
 export async function requireAdminSession(): Promise<User | null> {
   const user = await getSessionUser();
-  if (!user || user.role !== 'admin') {
+  if (!user || (user.role !== 'admin' && user.role !== 'super_admin' && user.role_id !== 1)) {
     return null;
   }
   return user;

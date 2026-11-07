@@ -3,8 +3,9 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Search, ShoppingBag, Menu, X, Phone } from 'lucide-react';
+import { Search, ShoppingBag, Menu, X, Phone, User } from 'lucide-react';
 import { cleanWhatsAppNumber } from '@/lib/format';
+import { useCart } from '@/context/CartContext';
 
 interface NavbarProps {
   siteName?: string;
@@ -21,6 +22,7 @@ export default function Navbar({
   const [searchFocused, setSearchFocused] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const pathname = usePathname();
+  const { cart, openDrawer } = useCart();
 
   const cleanPhone = cleanWhatsAppNumber(whatsappNumber);
 
@@ -123,18 +125,29 @@ export default function Navbar({
               <span>{whatsappNumber}</span>
             </a>
 
-            {/* Visual Cart Icon */}
+            {/* Customer Account Icon */}
+            <Link
+              href="/account"
+              className="p-2 text-stone-700 hover:text-stone-950 transition rounded-full hover:bg-stone-100"
+              title="My Account & Orders"
+            >
+              <User className="w-5 h-5" />
+            </Link>
+
+            {/* Shopping Bag Icon with Live Badge */}
             <div className="relative">
               <button
                 type="button"
-                className="p-2 text-stone-700 hover:text-stone-950 transition rounded-full hover:bg-stone-100"
-                title="Cart (Phase 2 Roadmap)"
-                onClick={() => alert('For immediate orders, please click the WhatsApp button (0313-5209085). Shopping cart & automated checkout are part of Phase 2.')}
+                className="p-2 text-stone-700 hover:text-stone-950 transition rounded-full hover:bg-stone-100 cursor-pointer"
+                title="View Shopping Bag"
+                onClick={openDrawer}
               >
                 <ShoppingBag className="w-5 h-5" />
-                <span className="absolute top-0 right-0 w-4 h-4 bg-amber-800 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
-                  0
-                </span>
+                {cart && cart.item_count > 0 && (
+                  <span className="absolute top-0 right-0 w-4 h-4 bg-amber-800 text-white text-[10px] font-bold rounded-full flex items-center justify-center animate-in zoom-in duration-200">
+                    {cart.item_count}
+                  </span>
+                )}
               </button>
             </div>
           </div>
