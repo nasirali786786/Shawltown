@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Product, Review, formatPrice, buildWhatsAppLink } from '@/lib/format';
 import { useCart } from '@/context/CartContext';
+import { useWishlist } from '@/context/WishlistContext';
 import {
   Sparkles,
   ShieldCheck,
@@ -21,6 +22,11 @@ import {
   Clock,
   Truck,
   RotateCcw,
+  Heart,
+  MapPin,
+  Calendar,
+  CheckCircle2,
+  BadgePercent,
 } from 'lucide-react';
 
 interface ProductDetailViewProps {
@@ -31,6 +37,23 @@ interface ProductDetailViewProps {
   siteName?: string;
 }
 
+const MAJOR_PAKISTAN_CITIES = [
+  { name: 'Islamabad', days: '1-2 Days', fee: 'Rs. 199 (FREE over Rs. 5,000)', hub: 'Express Local Hub' },
+  { name: 'Rawalpindi', days: '1-2 Days', fee: 'Rs. 199 (FREE over Rs. 5,000)', hub: 'Express Local Hub' },
+  { name: 'Lahore', days: '2-3 Days', fee: 'Rs. 249 (FREE over Rs. 5,000)', hub: 'TCS / Leopards Priority' },
+  { name: 'Karachi', days: '2-4 Days', fee: 'Rs. 249 (FREE over Rs. 5,000)', hub: 'TCS / Air Cargo Express' },
+  { name: 'Peshawar', days: '2-3 Days', fee: 'Rs. 249 (FREE over Rs. 5,000)', hub: 'Leopards Courier Hub' },
+  { name: 'Multan', days: '2-3 Days', fee: 'Rs. 249 (FREE over Rs. 5,000)', hub: 'Trax / TCS Express' },
+  { name: 'Faisalabad', days: '2-3 Days', fee: 'Rs. 249 (FREE over Rs. 5,000)', hub: 'TCS Hub' },
+  { name: 'Quetta', days: '3-4 Days', fee: 'Rs. 299 (FREE over Rs. 5,000)', hub: 'TCS Priority Hub' },
+  { name: 'Sialkot', days: '2-3 Days', fee: 'Rs. 249 (FREE over Rs. 5,000)', hub: 'TCS Courier' },
+  { name: 'Gujranwala', days: '2-3 Days', fee: 'Rs. 249 (FREE over Rs. 5,000)', hub: 'TCS Courier' },
+  { name: 'Hyderabad', days: '2-4 Days', fee: 'Rs. 249 (FREE over Rs. 5,000)', hub: 'Leopards Hub' },
+  { name: 'Abbottabad / Hazara', days: '2-3 Days', fee: 'Rs. 249 (FREE over Rs. 5,000)', hub: 'Trax Hub' },
+  { name: 'Gilgit / Skardu / AJK', days: '3-5 Days', fee: 'Rs. 299 (FREE over Rs. 5,000)', hub: 'Express Mountain Cargo' },
+  { name: 'Other Cities (All Pakistan)', days: '3-4 Days', fee: 'Rs. 249 (FREE over Rs. 5,000)', hub: 'Pakistan Post / Trax' },
+];
+
 export default function ProductDetailView({
   product,
   relatedProducts,
@@ -40,6 +63,10 @@ export default function ProductDetailView({
 }: ProductDetailViewProps) {
   const router = useRouter();
   const { addToCart } = useCart();
+  const { isInWishlist, toggleWishlist } = useWishlist();
+  const isWishlisted = isInWishlist(product.id);
+
+  const [selectedCity, setSelectedCity] = useState(MAJOR_PAKISTAN_CITIES[0]);
 
   let additional: string[] = [];
   try {
@@ -190,7 +217,7 @@ export default function ProductDetailView({
     : '5.0';
 
   return (
-    <div className="space-y-16">
+    <div className="space-y-16 pb-20 md:pb-0">
       {/* Breadcrumb Navigation */}
       <nav className="flex items-center gap-2 text-xs text-stone-500 uppercase tracking-wider">
         <Link href="/" className="hover:text-stone-900 transition">
@@ -236,6 +263,18 @@ export default function ProductDetailView({
                 </span>
               </div>
             )}
+            <button
+              type="button"
+              onClick={() => toggleWishlist(product)}
+              aria-label={isWishlisted ? 'Remove from Wishlist' : 'Add to Wishlist'}
+              className={`absolute top-4 right-4 p-3 rounded-full backdrop-blur-md shadow-md transition-all cursor-pointer z-10 ${
+                isWishlisted
+                  ? 'bg-rose-50 text-rose-600'
+                  : 'bg-white/90 text-stone-600 hover:text-rose-600 hover:bg-white'
+              }`}
+            >
+              <Heart className={`w-5 h-5 ${isWishlisted ? 'fill-rose-600 text-rose-600' : ''}`} />
+            </button>
           </div>
 
           {/* Thumbnails (if multiple images) */}
@@ -408,15 +447,90 @@ export default function ProductDetailView({
                 <span>Order via WhatsApp ({whatsappNumber})</span>
               </a>
 
-              <div className="flex items-center justify-center">
+              <div className="flex items-center justify-center gap-6 pt-2 border-t border-stone-200/60">
+                <button
+                  type="button"
+                  onClick={() => toggleWishlist(product)}
+                  className={`text-xs font-medium flex items-center gap-1.5 transition cursor-pointer ${
+                    isWishlisted ? 'text-rose-600 font-semibold' : 'text-stone-500 hover:text-stone-900'
+                  }`}
+                >
+                  <Heart className={`w-4 h-4 ${isWishlisted ? 'fill-rose-600 text-rose-600' : ''}`} />
+                  <span>{isWishlisted ? 'Saved in Wishlist' : 'Save to Wishlist'}</span>
+                </button>
+
+                <span className="text-stone-300">|</span>
+
                 <button
                   type="button"
                   onClick={handleShare}
                   className="text-stone-500 hover:text-stone-900 text-xs font-medium flex items-center gap-1.5 transition cursor-pointer"
                 >
                   {copiedLink ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Share2 className="w-3.5 h-3.5" />}
-                  <span>{copiedLink ? 'Link copied to clipboard!' : 'Share this masterpiece'}</span>
+                  <span>{copiedLink ? 'Link copied!' : 'Share'}</span>
                 </button>
+              </div>
+            </div>
+
+            {/* Daraz-Style City Delivery & Services Estimator */}
+            <div className="bg-amber-50/40 border border-amber-200/70 rounded-2xl p-5 space-y-4 shadow-2xs">
+              <div className="flex items-center justify-between gap-2 pb-3 border-b border-amber-200/60">
+                <div className="flex items-center gap-2">
+                  <MapPin className="w-4 h-4 text-amber-800 shrink-0" />
+                  <span className="text-xs font-bold uppercase tracking-wider text-stone-900">
+                    Delivery Destination
+                  </span>
+                </div>
+                <select
+                  value={selectedCity.name}
+                  onChange={(e) => {
+                    const found = MAJOR_PAKISTAN_CITIES.find((c) => c.name === e.target.value);
+                    if (found) setSelectedCity(found);
+                  }}
+                  className="text-xs bg-white border border-stone-300 rounded-lg px-2.5 py-1.5 font-semibold text-stone-800 focus:outline-none focus:border-amber-800 cursor-pointer shadow-2xs"
+                >
+                  {MAJOR_PAKISTAN_CITIES.map((city) => (
+                    <option key={city.name} value={city.name}>
+                      {city.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Delivery Speed & Fees */}
+              <div className="space-y-3 text-xs">
+                <div className="flex items-start gap-3">
+                  <Truck className="w-4 h-4 text-emerald-700 shrink-0 mt-0.5" />
+                  <div className="flex-1">
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-stone-900">Standard Doorstep Delivery</span>
+                      <span className="font-semibold text-emerald-800">{selectedCity.fee}</span>
+                    </div>
+                    <p className="text-stone-600 text-[11px] mt-0.5">
+                      Estimated Delivery: <span className="text-stone-900 font-semibold">{selectedCity.days}</span> via {selectedCity.hub}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                  <div className="flex-1">
+                    <span className="font-bold text-stone-900">Cash on Delivery (COD) Available</span>
+                    <p className="text-stone-500 text-[11px] mt-0.5">
+                      Open &amp; inspect parcel before paying the courier in {selectedCity.name}.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-start gap-3">
+                  <RotateCcw className="w-4 h-4 text-stone-700 shrink-0 mt-0.5" />
+                  <div className="flex-1">
+                    <span className="font-bold text-stone-900">7 Days Easy Return &amp; Exchange</span>
+                    <p className="text-stone-500 text-[11px] mt-0.5">
+                      100% money back guarantee if not completely satisfied with quality.
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -695,6 +809,67 @@ export default function ProductDetailView({
           </div>
         </section>
       )}
+
+      {/* Daraz-Style Sticky Mobile Action Bar */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-stone-200 px-4 py-3 shadow-2xl flex items-center justify-between gap-2.5">
+        <div className="flex flex-col">
+          <span className="text-[10px] text-stone-500 uppercase font-bold tracking-wider">Total</span>
+          <div className="flex items-baseline gap-1.5">
+            <span className="text-base font-bold text-stone-950 font-serif">
+              {formatPrice(product.price * quantity, currencySymbol)}
+            </span>
+            {discount && (
+              <span className="text-[10px] bg-rose-600 text-white font-bold px-1.5 py-0.5 rounded shadow-2xs">
+                -{discount}%
+              </span>
+            )}
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          {/* Quick WhatsApp Concierge */}
+          <a
+            href={whatsappUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Order on WhatsApp"
+            className="p-2.5 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition shrink-0"
+          >
+            <MessageCircle className="w-4 h-4" />
+          </a>
+
+          {/* Quick Wishlist Toggle */}
+          <button
+            type="button"
+            onClick={() => toggleWishlist(product)}
+            aria-label={isWishlisted ? 'Remove from Wishlist' : 'Add to Wishlist'}
+            className={`p-2.5 rounded-xl border transition shrink-0 ${
+              isWishlisted
+                ? 'bg-rose-50 text-rose-600 border-rose-200'
+                : 'bg-stone-50 text-stone-600 border-stone-200 hover:text-rose-600'
+            }`}
+          >
+            <Heart className={`w-4 h-4 ${isWishlisted ? 'fill-rose-600 text-rose-600' : ''}`} />
+          </button>
+
+          {/* Quick Add to Bag / Buy Now CTA */}
+          <button
+            type="button"
+            onClick={handleAddToCart}
+            disabled={adding || isOutOfStock}
+            className={`px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition shadow-md flex items-center gap-1.5 cursor-pointer ${
+              added
+                ? 'bg-emerald-700 text-white'
+                : isOutOfStock
+                ? 'bg-stone-300 text-stone-500 cursor-not-allowed'
+                : 'bg-stone-900 text-white hover:bg-amber-900'
+            }`}
+          >
+            <ShoppingBag className="w-3.5 h-3.5" />
+            <span>{added ? 'Added!' : adding ? '...' : 'Add to Bag'}</span>
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

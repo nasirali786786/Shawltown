@@ -5,6 +5,8 @@ import { getFeaturedProducts, getAllCategories, getAllProducts, getSettings } fr
 import { cleanWhatsAppNumber } from '@/lib/format';
 import ProductCard from '@/components/ProductCard';
 import CategoryCard from '@/components/CategoryCard';
+import FlashSaleBanner from '@/components/FlashSaleBanner';
+import CollectibleVouchers from '@/components/CollectibleVouchers';
 
 export const dynamic = 'force-dynamic';
 
@@ -88,6 +90,12 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* FLASH SALE & COUNTDOWN BANNER (DARAZ PATTERN) */}
+      <FlashSaleBanner />
+
+      {/* COLLECTIBLE VOUCHERS (DARAZ PATTERN) */}
+      <CollectibleVouchers />
 
       {/* 2. WHATSAPP FAST ORDER CALLOUT BANNER */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

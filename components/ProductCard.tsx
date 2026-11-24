@@ -2,9 +2,10 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { Sparkles, Eye, MessageCircle, ArrowUpRight, ShoppingBag, Check } from 'lucide-react';
+import { Sparkles, Eye, MessageCircle, ArrowUpRight, ShoppingBag, Check, Heart } from 'lucide-react';
 import { Product, formatPrice, buildWhatsAppLink } from '@/lib/format';
 import { useCart } from '@/context/CartContext';
+import { useWishlist } from '@/context/WishlistContext';
 
 interface ProductCardProps {
   product: Product;
@@ -18,6 +19,8 @@ export default function ProductCard({
   currencySymbol = 'Rs.',
 }: ProductCardProps) {
   const { addToCart } = useCart();
+  const { isInWishlist, toggleWishlist } = useWishlist();
+  const isFavorite = isInWishlist(product.id);
   const [adding, setAdding] = useState(false);
   const [added, setAdded] = useState(false);
 
@@ -80,6 +83,25 @@ export default function ProductCard({
             </span>
           )}
         </div>
+
+        {/* Wishlist Heart Button Overlay */}
+        <button
+          type="button"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            toggleWishlist(product);
+          }}
+          aria-label={isFavorite ? 'Remove from wishlist' : 'Save to wishlist'}
+          title={isFavorite ? 'In Wishlist' : 'Add to Wishlist'}
+          className="absolute top-3 right-3 z-20 w-8 h-8 rounded-full bg-white/95 backdrop-blur-xs flex items-center justify-center shadow-md transition-all duration-200 hover:scale-110 active:scale-90 cursor-pointer"
+        >
+          <Heart
+            className={`w-4 h-4 transition-colors ${
+              isFavorite ? 'fill-rose-600 text-rose-600' : 'text-stone-500 hover:text-rose-600'
+            }`}
+          />
+        </button>
 
         {/* Quick View Button Overlay */}
         <div className="absolute inset-0 bg-stone-950/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center p-4">
