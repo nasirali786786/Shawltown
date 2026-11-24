@@ -6,7 +6,7 @@ import CategoryCard from '@/components/CategoryCard';
 export const dynamic = 'force-dynamic';
 
 export default function CategoriesPage() {
-  const categories = getAllCategories();
+  const categories = getAllCategories({ hideEmpty: true });
   const settings = getSettings();
 
   return (

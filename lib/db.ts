@@ -422,18 +422,20 @@ export function createReview(data: {
 
 // ---------------- CATEGORIES QUERIES ----------------
 
-export function getAllCategories(): Category[] {
+export function getAllCategories(options?: { hideEmpty?: boolean }): Category[] {
   const db = getDatabase();
-  return db
-    .prepare(
-      `SELECT c.*, COUNT(p.id) AS product_count
-       FROM categories c
-       LEFT JOIN products p ON c.id = p.category_id AND p.is_active = 1
-       WHERE c.is_active = 1 OR c.is_active IS NULL
-       GROUP BY c.id
-       ORDER BY COALESCE(c.display_order, 0) ASC, c.id ASC`
-    )
-    .all() as Category[];
+  let sql = `
+    SELECT c.*, COUNT(p.id) AS product_count
+    FROM categories c
+    LEFT JOIN products p ON c.id = p.category_id AND p.is_active = 1
+    WHERE c.is_active = 1 OR c.is_active IS NULL
+    GROUP BY c.id
+  `;
+  if (options?.hideEmpty) {
+    sql += ` HAVING product_count > 0`;
+  }
+  sql += ` ORDER BY COALESCE(c.display_order, 0) ASC, c.id ASC`;
+  return db.prepare(sql).all() as Category[];
 }
 
 export function createCategory(data: {

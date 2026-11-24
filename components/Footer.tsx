@@ -40,28 +40,33 @@ export default function Footer() {
             </h3>
             <ul className="space-y-2.5 text-xs sm:text-sm text-stone-400">
               <li>
-                <Link href="/products?category=kashmiri-pashmina" className="hover:text-amber-400 transition-colors">
-                  Kashmiri Pashmina Shawls
+                <Link href="/products?category=kashmiri-stoles" className="hover:text-amber-400 transition-colors">
+                  Kashmiri Stoles (Stawlers)
                 </Link>
               </li>
               <li>
-                <Link href="/products?category=embroidered-stoles" className="hover:text-amber-400 transition-colors">
-                  Hand Embroidered Stoles
+                <Link href="/products?category=pashmina-kingri" className="hover:text-amber-400 transition-colors">
+                  Pashmina &amp; Kingri Shawls
                 </Link>
               </li>
               <li>
-                <Link href="/products?category=velvet-bridal" className="hover:text-amber-400 transition-colors">
-                  Royal Velvet Bridal Shawls
+                <Link href="/products?category=needlework-sozni" className="hover:text-amber-400 transition-colors">
+                  Needlework &amp; Sozni Shawls
                 </Link>
               </li>
               <li>
-                <Link href="/products?category=swati-wool" className="hover:text-amber-400 transition-colors">
-                  Swati &amp; Pure Wool Shawls
+                <Link href="/products?category=aari-work" className="hover:text-amber-400 transition-colors">
+                  Aari Work Shawls
                 </Link>
               </li>
               <li>
-                <Link href="/products?category=silk-stoles" className="hover:text-amber-400 transition-colors">
-                  Mulberry Silk &amp; Party Stoles
+                <Link href="/products?category=woolen-kashmiri" className="hover:text-amber-400 transition-colors">
+                  Woolen Kashmiri Shawls
+                </Link>
+              </li>
+              <li>
+                <Link href="/products?category=jamawar-kani" className="hover:text-amber-400 transition-colors">
+                  Jamawar &amp; Kani Shawls
                 </Link>
               </li>
             </ul>
@@ -85,12 +90,17 @@ export default function Footer() {
               </li>
               <li>
                 <Link href="/categories" className="hover:text-amber-400 transition-colors">
-                  Browse Categories
+                  Browse Collections
                 </Link>
               </li>
               <li>
-                <Link href="/#craftsmanship" className="hover:text-amber-400 transition-colors">
-                  Authentic Craftsmanship
+                <Link href="/track-order" className="hover:text-amber-400 transition-colors">
+                  Track Your Order
+                </Link>
+              </li>
+              <li>
+                <Link href="/wishlist" className="hover:text-amber-400 transition-colors">
+                  Saved Wishlist
                 </Link>
               </li>
               <li>
@@ -133,8 +143,8 @@ export default function Footer() {
               </div>
               <div className="flex items-center gap-3">
                 <Mail className="w-4 h-4 text-amber-500 shrink-0" />
-                <a href={`mailto:${settings.contact_email || 'orders@shawlghar.com'}`} className="hover:text-white transition">
-                  {settings.contact_email || 'orders@shawlghar.com'}
+                <a href={`mailto:${settings.contact_email || 'support@shawlghar.com'}`} className="hover:text-white transition">
+                  {settings.contact_email || 'support@shawlghar.com'}
                 </a>
               </div>
               <div className="flex items-center gap-3">

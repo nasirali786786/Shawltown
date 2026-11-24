@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Sparkles, Eye, MessageCircle, ArrowUpRight, ShoppingBag, Check, Heart } from 'lucide-react';
 import { Product, formatPrice, buildWhatsAppLink } from '@/lib/format';
@@ -24,6 +24,15 @@ export default function ProductCard({
   const [adding, setAdding] = useState(false);
   const [added, setAdded] = useState(false);
 
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://shawltown.onrender.com';
+  const [productUrl, setProductUrl] = useState(`${siteUrl}/products/${product.id}`);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.location.origin) {
+      setProductUrl(`${window.location.origin}/products/${product.id}`);
+    }
+  }, [product.id, siteUrl]);
+
   const discount = product.compare_at_price
     ? Math.round(((product.compare_at_price - product.price) / product.compare_at_price) * 100)
     : null;
@@ -33,8 +42,8 @@ export default function ProductCard({
     ? formatPrice(product.compare_at_price, currencySymbol)
     : null;
 
-  // WhatsApp pre-filled message in clean English
-  const whatsappMsg = `Hello! I would like to order this handcrafted shawl from Shawl Ghar:\n\n*${product.name}*\nPrice: ${formattedPrice}\nLink: http://localhost:3000/products/${product.id}\n\nPlease share Cash on Delivery order confirmation details. Thank you!`;
+  // WhatsApp pre-filled message with live store domain
+  const whatsappMsg = `Hello! I would like to order this handcrafted shawl from Shawl Ghar:\n\n*${product.name}*\nPrice: ${formattedPrice}\nLink: ${productUrl}\n\nPlease share Cash on Delivery order confirmation details. Thank you!`;
   const whatsappUrl = buildWhatsAppLink(whatsappNumber, whatsappMsg);
 
   const handleAddToCart = async (e: React.MouseEvent) => {
@@ -107,6 +116,7 @@ export default function ProductCard({
         <div className="absolute inset-0 bg-stone-950/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center p-4">
           <Link
             href={`/products/${product.id}`}
+            aria-label={`Inspect weave of ${product.name}`}
             className="translate-y-3 group-hover:translate-y-0 transition-transform duration-300 bg-white/95 text-stone-900 hover:bg-stone-900 hover:text-white px-4 py-2 rounded-full text-xs font-semibold tracking-wider uppercase flex items-center gap-2 shadow-lg"
           >
             <Eye className="w-3.5 h-3.5" />
@@ -162,8 +172,10 @@ export default function ProductCard({
               href={`/products/${product.id}`}
               className="text-stone-400 hover:text-stone-900 p-1"
               title="View full specs"
+              aria-label={`View full specifications for ${product.name}`}
             >
               <ArrowUpRight className="w-4 h-4" />
+              <span className="sr-only">View specs</span>
             </Link>
           </div>
 

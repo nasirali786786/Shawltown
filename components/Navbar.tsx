@@ -102,10 +102,12 @@ export default function Navbar({
             {/* Wishlist Icon with Live Badge */}
             <Link
               href="/wishlist"
+              aria-label={`Wishlist (${wishlistCount} saved)`}
               className="relative p-2 text-stone-700 hover:text-rose-600 transition rounded-full hover:bg-stone-100"
               title="Saved Items / Wishlist"
             >
               <Heart className={`w-5 h-5 ${wishlistCount > 0 ? 'text-rose-600 fill-rose-600/20' : ''}`} />
+              <span className="sr-only">Wishlist</span>
               {wishlistCount > 0 && (
                 <span className="absolute top-0 right-0 w-4 h-4 bg-rose-600 text-white text-[10px] font-bold rounded-full flex items-center justify-center animate-in zoom-in duration-200">
                   {wishlistCount}
@@ -116,10 +118,12 @@ export default function Navbar({
             {/* Customer Account Icon */}
             <Link
               href="/account"
+              aria-label="Customer Account and Orders"
               className="p-2 text-stone-700 hover:text-stone-950 transition rounded-full hover:bg-stone-100"
               title="My Account & Orders"
             >
               <User className="w-5 h-5" />
+              <span className="sr-only">My Account</span>
             </Link>
 
             {/* Shopping Bag Icon with Live Badge */}

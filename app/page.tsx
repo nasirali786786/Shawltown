@@ -13,7 +13,7 @@ export const dynamic = 'force-dynamic';
 export default function HomePage() {
   const settings = getSettings();
   const featuredProducts = getFeaturedProducts(4);
-  const categories = getAllCategories();
+  const categories = getAllCategories({ hideEmpty: true });
   const allProducts = getAllProducts({ limit: 4 });
   const displayProducts = featuredProducts.length > 0 ? featuredProducts : allProducts;
 
@@ -237,12 +237,12 @@ export default function HomePage() {
             </div>
           </div>
 
-          <div className="relative min-h-[320px] lg:min-h-full">
+          <div className="relative min-h-[320px] lg:min-h-full rounded-2xl overflow-hidden shadow-md">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src="https://images.unsplash.com/photo-1544816155-12df9643f363?q=80&w=1200&auto=format&fit=crop"
-              alt="Handcrafted Kashmiri Needle Embroidery"
-              className="absolute inset-0 w-full h-full object-cover object-center"
+              src="/images/products/shop-craft-feature.jpg"
+              alt="Handcrafted Kashmiri Needle Embroidery Workshop"
+              className="absolute inset-0 w-full h-full object-cover object-center hover:scale-105 transition-transform duration-700"
             />
           </div>
         </div>

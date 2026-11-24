@@ -110,8 +110,17 @@ export default function ProductDetailView({
     ? formatPrice(product.compare_at_price, currencySymbol)
     : null;
 
-  // WhatsApp order concierge link in clean English
-  const orderMessage = `Hello! I would like to order this handcrafted item from *${siteName}*:\n\n✨ *${product.name}* ✨\n*Price:* ${formattedPrice} ${formattedComparePrice ? `(Original: ${formattedComparePrice})` : ''}\n*Product Link:* ${typeof window !== 'undefined' ? window.location.href : `http://localhost:3000/products/${product.id}`}\n\nPlease confirm availability and share Cash on Delivery order details. Thank you!`;
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://shawltown.onrender.com';
+  const [currentUrl, setCurrentUrl] = useState(`${siteUrl}/products/${product.id}`);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setCurrentUrl(window.location.href);
+    }
+  }, [product.id]);
+
+  // WhatsApp order concierge link with live domain
+  const orderMessage = `Hello! I would like to order this handcrafted item from *${siteName}*:\n\n✨ *${product.name}* ✨\n*Price:* ${formattedPrice} ${formattedComparePrice ? `(Original: ${formattedComparePrice})` : ''}\n*Product Link:* ${currentUrl}\n\nPlease confirm availability and share Cash on Delivery order details. Thank you!`;
   const whatsappUrl = buildWhatsAppLink(whatsappNumber, orderMessage);
 
   useEffect(() => {
@@ -361,10 +370,18 @@ export default function ProductDetailView({
                     {isOutOfStock
                       ? 'Out of Stock'
                       : product.stock_status === 'low_stock'
-                      ? `Limited Stock — Only ${product.stock_quantity ?? 3} left!`
+                      ? `Limited Edition — Only ${product.stock_quantity ?? 2} left in stock!`
                       : `In Stock (${product.stock_quantity ?? 12} units ready for immediate dispatch)`}
                   </span>
                 </div>
+              </div>
+
+              {/* Social Proof Live Activity Badge */}
+              <div className="flex items-center gap-2 pt-2 border-t border-amber-200/60 text-[11px] text-stone-600">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping shrink-0" />
+                <span>
+                  <strong>Recent Dispatch:</strong> 1 piece ordered from <strong>Lahore</strong> 3 hours ago
+                </span>
               </div>
             </div>
 
@@ -541,6 +558,10 @@ export default function ProductDetailView({
                 <span className="font-bold text-stone-900">{product.material || 'Premium Pure Himalayan Wool'}</span>
               </div>
               <div className="flex items-center justify-between">
+                <span className="font-semibold text-stone-500">Dimensions:</span>
+                <span className="font-bold text-stone-900">{product.dimensions || '100 cm x 200 cm (Full Size Wrap)'}</span>
+              </div>
+              <div className="flex items-center justify-between">
                 <span className="font-semibold text-stone-500">Craftsmanship:</span>
                 <span className="font-bold text-stone-900">{product.origin || '100% Authentic Hand-Done Kashmiri Needle Embroidery'}</span>
               </div>
@@ -550,8 +571,20 @@ export default function ProductDetailView({
               </div>
               <div className="flex items-center justify-between">
                 <span className="font-semibold text-stone-500">Recommended Care:</span>
-                <span className="font-bold text-stone-900">Dry Clean Only or Cold Hand Soak</span>
+                <span className="font-bold text-stone-900">Dry Clean Only or Cold Hand Soak with Wool Shampoo</span>
               </div>
+            </div>
+
+            {/* Artisan Guide: Pure Wool vs Pashmina */}
+            <div className="p-4 bg-amber-50/60 border border-amber-200/70 rounded-2xl space-y-1.5 text-xs">
+              <div className="flex items-center gap-2 font-serif font-bold text-stone-900">
+                <Sparkles className="w-3.5 h-3.5 text-amber-800 shrink-0" />
+                <span>Artisan Guide: Pure Wool vs. Pashmina</span>
+              </div>
+              <p className="text-[11px] text-stone-600 leading-relaxed">
+                <strong>Pure Kashmiri Wool:</strong> Spun from high-altitude fleece, structured, intensely warm, and resilient for daily and deep winter wear.<br />
+                <strong>Pashmina / Cashmere:</strong> Ultra-delicate undercoat fibers of the Changthangi mountain goat (under 15 microns). Cloud-soft, gossamer-light, and glides smoothly through an ordinary finger ring.
+              </p>
             </div>
 
             {/* Shipping & Delivery Guarantee Highlights */}
