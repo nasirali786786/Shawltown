@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useCart } from '@/context/CartContext';
 import { formatPrice } from '@/lib/format';
+import { getStoredGiftPrefs, saveStoredGiftPrefs } from '@/components/ShawlCraftsmanshipWidgets';
 import {
   ShieldCheck,
   Truck,
@@ -18,7 +19,9 @@ import {
   ShoppingBag,
   ArrowLeft,
   Lock,
-  Tag
+  Tag,
+  Gift,
+  Sparkles,
 } from 'lucide-react';
 
 const PAKISTANI_CITIES = [
@@ -64,6 +67,20 @@ export default function CheckoutPage() {
   const [couponCode, setCouponCode] = useState(searchParams.get('coupon') || '');
   const [couponDiscount, setCouponDiscount] = useState(0);
   const [couponStatus, setCouponStatus] = useState<string | null>(null);
+
+  // Luxury Gifting & Monogram state (auto-synced from Product page if selected)
+  const [velvetGiftBox, setVelvetGiftBox] = useState(false);
+  const [monogramEnabled, setMonogramEnabled] = useState(false);
+  const [monogramInitials, setMonogramInitials] = useState('');
+  const [giftMessage, setGiftMessage] = useState('');
+
+  useEffect(() => {
+    const prefs = getStoredGiftPrefs();
+    setVelvetGiftBox(prefs.velvetBox);
+    setMonogramEnabled(prefs.monogramEnabled);
+    setMonogramInitials(prefs.monogramInitials);
+    setGiftMessage(prefs.giftMessage || '');
+  }, []);
 
   // Submission state
   const [loading, setLoading] = useState(false);
@@ -129,7 +146,16 @@ export default function CheckoutPage() {
     shippingMethodName = 'Nationwide TCS / Leopards Courier';
   }
 
-  const grandTotal = Math.max(0, subtotal - couponDiscount + shippingRate);
+  const prepaidDiscount =
+    paymentMethod !== 'cod' ? Math.round(Math.max(0, subtotal - couponDiscount) * 0.05) : 0;
+  const giftBoxFee = velvetGiftBox ? 850 : 0;
+  const monogramFee = monogramEnabled && monogramInitials.trim() ? 500 : 0;
+  const giftAddOnTotal = giftBoxFee + monogramFee;
+
+  const grandTotal = Math.max(
+    0,
+    subtotal - couponDiscount - prepaidDiscount + shippingRate + giftAddOnTotal
+  );
 
   const handleSubmitOrder = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -152,6 +178,9 @@ export default function CheckoutPage() {
           shipping_method: shippingMethodName,
           payment_method: paymentMethod,
           coupon_code: couponDiscount > 0 ? couponCode : undefined,
+          gift_box: velvetGiftBox,
+          monogram_initials: monogramEnabled ? monogramInitials.trim() : undefined,
+          gift_message: velvetGiftBox ? giftMessage.trim() : undefined,
           notes,
         }),
       });
@@ -161,6 +190,12 @@ export default function CheckoutPage() {
         throw new Error(data.error || 'Failed to place order');
       }
 
+      saveStoredGiftPrefs({
+        velvetBox: false,
+        monogramEnabled: false,
+        monogramInitials: '',
+        giftMessage: '',
+      });
       await refreshCart();
       router.push(`/order-success/${data.orderNumber}`);
     } catch (err: any) {
@@ -369,12 +404,100 @@ export default function CheckoutPage() {
               </div>
             </div>
 
-            {/* 3. Payment Method Selection */}
-            <div className="bg-white p-6 sm:p-8 rounded-2xl border border-stone-200 shadow-2xs space-y-4">
+            {/* 3. Luxury Gifting & Personalization (Optional) */}
+            <div className="bg-white p-6 sm:p-8 rounded-2xl border border-rose-200/80 shadow-2xs space-y-4">
               <h2 className="text-base font-serif font-bold text-stone-900 border-b border-stone-100 pb-3 flex items-center gap-2">
-                <span className="w-6 h-6 rounded-full bg-stone-900 text-white text-xs flex items-center justify-center font-mono">3</span>
-                <span>Payment Method</span>
+                <span className="w-6 h-6 rounded-full bg-rose-800 text-white text-xs flex items-center justify-center font-mono">3</span>
+                <Gift className="w-4 h-4 text-rose-700" />
+                <span>Luxury Gift Packaging &amp; Custom Monogram (Optional)</span>
               </h2>
+
+              <div className="space-y-3 text-xs">
+                <label className={`block p-4 rounded-xl border transition cursor-pointer ${velvetGiftBox ? 'border-rose-600 bg-rose-50/50 ring-1 ring-rose-600' : 'border-stone-200 bg-stone-50 hover:bg-white'}`}>
+                  <div className="flex items-start gap-3">
+                    <input
+                      type="checkbox"
+                      checked={velvetGiftBox}
+                      onChange={(e) => setVelvetGiftBox(e.target.checked)}
+                      className="mt-0.5 rounded border-stone-300 text-rose-700 focus:ring-rose-700 cursor-pointer"
+                    />
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="font-bold text-stone-900">Royal Maroon Velvet Keepsake Gift Box</span>
+                        <span className="font-mono font-bold text-rose-800">+Rs. 850</span>
+                      </div>
+                      <p className="text-[11px] text-stone-500 mt-0.5">
+                        Rigid gold-foiled velvet gift box with satin ribbon &amp; bespoke greeting card. Ideal for bridal gifts &amp; mothers.
+                      </p>
+                      {velvetGiftBox && (
+                        <div className="mt-3">
+                          <input
+                            type="text"
+                            maxLength={120}
+                            placeholder="Write your personalized gift card note (optional)..."
+                            value={giftMessage}
+                            onChange={(e) => setGiftMessage(e.target.value)}
+                            className="w-full px-3 py-2 bg-white border border-rose-200 rounded-lg text-xs text-stone-900 focus:outline-none focus:border-rose-700"
+                          />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </label>
+
+                <div className={`p-4 rounded-xl border transition ${monogramEnabled ? 'border-amber-700 bg-amber-50/40 ring-1 ring-amber-700' : 'border-stone-200 bg-stone-50 hover:bg-white'}`}>
+                  <label className="flex items-start gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={monogramEnabled}
+                      onChange={(e) => {
+                        setMonogramEnabled(e.target.checked);
+                        if (!e.target.checked) setMonogramInitials('');
+                      }}
+                      className="mt-0.5 rounded border-stone-300 text-amber-800 focus:ring-amber-800 cursor-pointer"
+                    />
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="font-bold text-stone-900 flex items-center gap-1.5">
+                          <Sparkles className="w-3.5 h-3.5 text-amber-700" />
+                          <span>Hand-Embroidered Corner Initials (Monogram)</span>
+                        </span>
+                        <span className="font-mono font-bold text-amber-900">+Rs. 500</span>
+                      </div>
+                      <p className="text-[11px] text-stone-500 mt-0.5">
+                        Custom hand-embroidered initials (up to 3 letters) stitched discreetly on the shawl corner.
+                      </p>
+                    </div>
+                  </label>
+                  {monogramEnabled && (
+                    <div className="mt-3 pl-7 flex items-center gap-3">
+                      <input
+                        type="text"
+                        maxLength={4}
+                        placeholder="e.g. A.K"
+                        value={monogramInitials}
+                        onChange={(e) => setMonogramInitials(e.target.value.toUpperCase())}
+                        className="w-32 px-3 py-2 bg-white border border-amber-300 rounded-lg text-xs font-serif font-bold uppercase tracking-widest text-stone-900 focus:outline-none focus:border-amber-800"
+                      />
+                      <span className="text-[11px] text-stone-500">Enter initials for embroidery</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* 4. Payment Method Selection */}
+            <div className="bg-white p-6 sm:p-8 rounded-2xl border border-stone-200 shadow-2xs space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-stone-100 pb-3">
+                <h2 className="text-base font-serif font-bold text-stone-900 flex items-center gap-2">
+                  <span className="w-6 h-6 rounded-full bg-stone-900 text-white text-xs flex items-center justify-center font-mono">4</span>
+                  <span>Payment Method</span>
+                </h2>
+                <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider bg-emerald-100 text-emerald-800 px-2.5 py-1 rounded-full self-start sm:self-auto">
+                  <Sparkles className="w-3 h-3" />
+                  <span>Save Extra 5% on Prepaid Orders</span>
+                </span>
+              </div>
 
               <div className="space-y-3">
                 
@@ -413,9 +536,10 @@ export default function CheckoutPage() {
                         className="text-amber-800 focus:ring-amber-800"
                       />
                       <div>
-                        <div className="font-bold text-stone-900 text-xs sm:text-sm flex items-center gap-2">
+                        <div className="font-bold text-stone-900 text-xs sm:text-sm flex items-center gap-2 flex-wrap">
                           <Building2 className="w-4 h-4 text-amber-700" />
                           <span>Direct Bank Transfer (Meezan / Bank Alfalah)</span>
+                          <span className="text-[10px] bg-emerald-600 text-white font-bold px-2 py-0.5 rounded-full uppercase">Extra 5% Off</span>
                         </div>
                         <p className="text-[11px] text-stone-500 mt-0.5">Transfer directly via online banking or ATM. Account details shared after placing order.</p>
                       </div>
@@ -443,9 +567,10 @@ export default function CheckoutPage() {
                         className="text-amber-800 focus:ring-amber-800"
                       />
                       <div>
-                        <div className="font-bold text-stone-900 text-xs sm:text-sm flex items-center gap-2">
+                        <div className="font-bold text-stone-900 text-xs sm:text-sm flex items-center gap-2 flex-wrap">
                           <Smartphone className="w-4 h-4 text-orange-600" />
                           <span>JazzCash / Easypaisa Mobile Wallet</span>
+                          <span className="text-[10px] bg-emerald-600 text-white font-bold px-2 py-0.5 rounded-full uppercase">Extra 5% Off</span>
                         </div>
                         <p className="text-[11px] text-stone-500 mt-0.5">Instant transfer from your JazzCash or Easypaisa mobile app.</p>
                       </div>
@@ -521,6 +646,32 @@ export default function CheckoutPage() {
                       <span>Coupon Discount</span>
                     </span>
                     <span className="font-mono">-{formatPrice(couponDiscount)}</span>
+                  </div>
+                )}
+
+                {prepaidDiscount > 0 && (
+                  <div className="flex justify-between items-center text-emerald-700 font-semibold">
+                    <span className="flex items-center gap-1">
+                      <Sparkles className="w-3.5 h-3.5" />
+                      <span>5% Prepaid Bonus Savings</span>
+                    </span>
+                    <span className="font-mono">-{formatPrice(prepaidDiscount)}</span>
+                  </div>
+                )}
+
+                {giftAddOnTotal > 0 && (
+                  <div className="flex justify-between items-center text-rose-800 font-semibold">
+                    <span className="flex items-center gap-1">
+                      <Gift className="w-3.5 h-3.5" />
+                      <span>
+                        {velvetGiftBox && monogramFee > 0
+                          ? 'Velvet Box + Monogram'
+                          : velvetGiftBox
+                          ? 'Royal Velvet Gift Box'
+                          : `Monogram (${monogramInitials.trim()})`}
+                      </span>
+                    </span>
+                    <span className="font-mono">+{formatPrice(giftAddOnTotal)}</span>
                   </div>
                 )}
 

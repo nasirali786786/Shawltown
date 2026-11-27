@@ -7,6 +7,7 @@ import ProductCard from '@/components/ProductCard';
 import CategoryCard from '@/components/CategoryCard';
 import FlashSaleBanner from '@/components/FlashSaleBanner';
 import CollectibleVouchers from '@/components/CollectibleVouchers';
+import ShawlFinderAndMatcher from '@/components/ShawlFinderAndMatcher';
 
 export const dynamic = 'force-dynamic';
 
@@ -14,8 +15,8 @@ export default function HomePage() {
   const settings = getSettings();
   const featuredProducts = getFeaturedProducts(4);
   const categories = getAllCategories({ hideEmpty: true });
-  const allProducts = getAllProducts({ limit: 4 });
-  const displayProducts = featuredProducts.length > 0 ? featuredProducts : allProducts;
+  const allProducts = getAllProducts({ limit: 30 });
+  const displayProducts = featuredProducts.length > 0 ? featuredProducts : allProducts.slice(0, 4);
 
   const whatsapp = settings.whatsapp_number || '0313-5209085';
   const cleanPhone = cleanWhatsAppNumber(whatsapp);
@@ -152,6 +153,13 @@ export default function HomePage() {
           ))}
         </div>
       </section>
+
+      {/* 3.5 INTERACTIVE SHAWL FINDER QUIZ & OUTFIT MATCHER */}
+      <ShawlFinderAndMatcher
+        products={allProducts}
+        whatsappNumber={settings.whatsapp_number}
+        currencySymbol={settings.currency_symbol}
+      />
 
       {/* 4. FEATURED PRODUCTS SECTION */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

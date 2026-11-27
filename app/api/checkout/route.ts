@@ -17,6 +17,9 @@ export async function POST(request: Request) {
       shipping_method,
       payment_method = 'cod',
       coupon_code,
+      gift_box,
+      monogram_initials,
+      gift_message,
       notes,
     } = body;
 
@@ -73,6 +76,9 @@ export async function POST(request: Request) {
       shipping_method: shipping_method || undefined,
       payment_method: payment_method as any,
       coupon_code: coupon_code ? String(coupon_code).trim() : undefined,
+      gift_box: Boolean(gift_box),
+      monogram_initials: monogram_initials ? String(monogram_initials).trim() : undefined,
+      gift_message: gift_message ? String(gift_message).trim() : undefined,
       notes: notes ? String(notes).trim() : undefined,
     });
 

@@ -242,9 +242,14 @@ export default function OrderSuccessPage() {
 
         {/* Totals Section */}
         <div className="flex flex-col sm:flex-row justify-between items-start gap-6 border-t border-stone-200 pt-6 text-xs">
-          <div className="text-stone-400 space-y-1">
+          <div className="text-stone-400 space-y-1.5 max-w-md">
             <p>• All orders are inspected for 100% authentic needlework before dispatch.</p>
             <p>• Return or exchange within 7 days in case of manufacturing defect.</p>
+            {order.notes && (
+              <div className="mt-2 p-2.5 bg-amber-50/70 border border-amber-200 rounded-xl text-stone-700 text-[11px]">
+                <strong className="text-amber-900">Special Instructions &amp; Gifting:</strong> {order.notes}
+              </div>
+            )}
           </div>
 
           <div className="w-full sm:w-64 space-y-2 text-right">
@@ -256,6 +261,12 @@ export default function OrderSuccessPage() {
               <div className="flex justify-between text-emerald-700 font-semibold">
                 <span>Discount ({order.coupon_code || 'Promo'}):</span>
                 <span className="font-mono">-{formatPrice(order.discount_total)}</span>
+              </div>
+            )}
+            {order.tax_total > 0 && (
+              <div className="flex justify-between text-rose-800 font-semibold">
+                <span>Luxury Packaging / Monogram:</span>
+                <span className="font-mono">+{formatPrice(order.tax_total)}</span>
               </div>
             )}
             <div className="flex justify-between text-stone-600">

@@ -749,6 +749,9 @@ export function createOrderFromCart(params: {
   shipping_method?: string;
   payment_method: 'cod' | 'bank_transfer' | 'jazzcash' | 'easypaisa' | 'card';
   coupon_code?: string;
+  gift_box?: boolean;
+  monogram_initials?: string;
+  gift_message?: string;
   notes?: string;
 }): Order {
   const db = getDatabase();
@@ -775,7 +778,7 @@ export function createOrderFromCart(params: {
 
     const subtotal = items.reduce((sum, i) => sum + (i.unit_price * i.quantity), 0);
 
-    // 3. Calculate Discount
+    // 3. Calculate Discount (Coupon + 5% Prepaid Online Payment Bonus)
     let discountTotal = 0;
     let validatedCouponId: number | null = null;
     if (params.coupon_code) {
@@ -786,11 +789,34 @@ export function createOrderFromCart(params: {
       }
     }
 
-    // 4. Calculate Shipping
+    const prepaidDiscount =
+      params.payment_method !== 'cod'
+        ? Math.round(Math.max(0, subtotal - discountTotal) * 0.05)
+        : 0;
+    discountTotal += prepaidDiscount;
+
+    // 4. Calculate Shipping & Luxury Gifting Add-ons
     const shippingInfo = getShippingRate(params.shipping_city, subtotal);
     const shippingTotal = shippingInfo.rate;
-    const taxTotal = 0;
-    const grandTotal = Math.max(0, subtotal - discountTotal + shippingTotal + taxTotal);
+    const giftBoxFee = params.gift_box ? 850 : 0;
+    const cleanMonogram = params.monogram_initials ? params.monogram_initials.trim().slice(0, 6) : '';
+    const monogramFee = cleanMonogram ? 500 : 0;
+    const addOnTotal = giftBoxFee + monogramFee;
+    const grandTotal = Math.max(0, subtotal - discountTotal + shippingTotal + addOnTotal);
+
+    const extraNotes: string[] = [];
+    if (params.gift_box) extraNotes.push('Royal Velvet Keepsake Box (+Rs. 850)');
+    if (cleanMonogram) extraNotes.push(`Hand-Embroidered Monogram: "${cleanMonogram}" (+Rs. 500)`);
+    if (params.gift_message && params.gift_message.trim()) {
+      extraNotes.push(`Gift Card Message: "${params.gift_message.trim()}"`);
+    }
+    if (prepaidDiscount > 0) {
+      extraNotes.push(`5% Prepaid Order Discount Applied (-Rs. ${prepaidDiscount})`);
+    }
+    if (params.notes && params.notes.trim()) {
+      extraNotes.push(params.notes.trim());
+    }
+    const finalNotes = extraNotes.length > 0 ? extraNotes.join(' | ') : null;
 
     // 5. Generate Unique Order Number (SG-YYYYMM-XXXX)
     const yearMonth = new Date().toISOString().slice(0, 7).replace('-', '');
@@ -828,10 +854,10 @@ export function createOrderFromCart(params: {
       subtotal,
       discount_total: discountTotal,
       shipping_total: shippingTotal,
-      tax_total: taxTotal,
+      tax_total: addOnTotal,
       grand_total: grandTotal,
-      coupon_code: params.coupon_code || null,
-      notes: params.notes || null,
+      coupon_code: params.coupon_code || (prepaidDiscount > 0 ? 'PREPAID5' : null),
+      notes: finalNotes,
     });
 
     const orderId = Number(orderRes.lastInsertRowid);

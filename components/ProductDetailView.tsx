@@ -7,6 +7,12 @@ import { Product, Review, formatPrice, buildWhatsAppLink } from '@/lib/format';
 import { useCart } from '@/context/CartContext';
 import { useWishlist } from '@/context/WishlistContext';
 import {
+  WarmthAndWeightMeter,
+  AuthenticityCertificateCard,
+  LuxuryGiftAndMonogramBox,
+  GiftPreferences,
+} from '@/components/ShawlCraftsmanshipWidgets';
+import {
   Sparkles,
   ShieldCheck,
   Feather,
@@ -67,6 +73,12 @@ export default function ProductDetailView({
   const isWishlisted = isInWishlist(product.id);
 
   const [selectedCity, setSelectedCity] = useState(MAJOR_PAKISTAN_CITIES[0]);
+  const [giftPrefs, setGiftPrefs] = useState<GiftPreferences>({
+    velvetBox: false,
+    monogramEnabled: false,
+    monogramInitials: '',
+    giftMessage: '',
+  });
 
   let additional: string[] = [];
   try {
@@ -119,8 +131,17 @@ export default function ProductDetailView({
     }
   }, [product.id]);
 
-  // WhatsApp order concierge link with live domain
-  const orderMessage = `Hello! I would like to order this handcrafted item from *${siteName}*:\n\n✨ *${product.name}* ✨\n*Price:* ${formattedPrice} ${formattedComparePrice ? `(Original: ${formattedComparePrice})` : ''}\n*Product Link:* ${currentUrl}\n\nPlease confirm availability and share Cash on Delivery order details. Thank you!`;
+  // WhatsApp order concierge link with live domain and optional gift/monogram prefs
+  const giftLines = [
+    giftPrefs.velvetBox ? '🎁 *Add-on:* Royal Velvet Keepsake Box (+Rs. 850)' : '',
+    giftPrefs.monogramEnabled && giftPrefs.monogramInitials.trim()
+      ? `🧵 *Monogram Initials:* "${giftPrefs.monogramInitials.trim()}" (+Rs. 500)`
+      : '',
+  ]
+    .filter(Boolean)
+    .join('\n');
+
+  const orderMessage = `Hello! I would like to order this handcrafted item from *${siteName}*:\n\n✨ *${product.name}* ✨\n*Price:* ${formattedPrice} ${formattedComparePrice ? `(Original: ${formattedComparePrice})` : ''}${giftLines ? `\n${giftLines}` : ''}\n*Product Link:* ${currentUrl}\n\nPlease confirm availability and share Cash on Delivery order details. Thank you!`;
   const whatsappUrl = buildWhatsAppLink(whatsappNumber, orderMessage);
 
   useEffect(() => {
@@ -389,6 +410,15 @@ export default function ProductDetailView({
             <div className="text-sm text-stone-700 leading-relaxed whitespace-pre-line bg-white p-4 rounded-xl border border-stone-200/80">
               {product.description}
             </div>
+
+            {/* Digital Authenticity Certificate & Ring Test Verification */}
+            <AuthenticityCertificateCard product={product} siteName={siteName} />
+
+            {/* Warmth & Weight Thermal Gauge */}
+            <WarmthAndWeightMeter product={product} />
+
+            {/* Luxury Velvet Gift Box & Monogram Initials Add-On */}
+            <LuxuryGiftAndMonogramBox onPrefsChange={setGiftPrefs} />
 
             {/* Quantity Selector & Shopping Cart Primary Actions */}
             <div className="bg-stone-50 border border-stone-200/90 rounded-2xl p-5 space-y-4 shadow-2xs">

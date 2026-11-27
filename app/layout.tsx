@@ -4,6 +4,7 @@ import PromoBanner from '@/components/PromoBanner';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import WhatsAppConcierge from '@/components/WhatsAppConcierge';
+import LiveSocialProof from '@/components/LiveSocialProof';
 import CartDrawer from '@/components/CartDrawer';
 import { CartProvider } from '@/context/CartContext';
 import { WishlistProvider } from '@/context/WishlistContext';
@@ -54,6 +55,7 @@ export default function RootLayout({
               whatsappNumber={settings.whatsapp_number}
               siteName={settings.site_name}
             />
+            <LiveSocialProof />
             <CartDrawer />
           </WishlistProvider>
         </CartProvider>
